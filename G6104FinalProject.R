@@ -1,0 +1,39 @@
+install.packages("‘linprog")
+require(linprog)
+install.packages("lpSolve")
+library(lpSolve)
+T=matrix(c(0,1/2,0,1/2,0,1/2,0,1/2,0),nrow=3)
+n=3
+ntilde=3
+t=0.03
+lambda=0.1
+alpha=0.1
+I=diag(n)
+Itilde=diag(ntilde)
+mzero=matrix(0,nrow=ntilde,ncol=ntilde)
+e=c(rep(1,ntilde))
+czero=c(rep(0,ntilde))
+f=matrix(nrow=ntilde,ncol=ntilde)
+R=matrix(nrow=ntilde,ncol=ntilde)
+s=matrix(nrow=ntilde,ncol=1)
+p=matrix(nrow=ntilde,ncol=1)
+P=solve(I+lambda*I-T)
+for(i in 1:ntilde){
+  for (j in 1:ntilde){
+    f[i,j]=alpha/P[i,i]*P[j,i]
+    if(f[i,j]>t){
+      R[j,i]=1
+    }
+    else{
+      R[j,i]=0
+    }
+  }
+}
+CR=cbind(R,I)
+A=c(rep(1,ntilde),rep(0,ntilde))
+A1=cbind(rbind(Itilde,R),rbind(mzero,-Itilde)) 
+A2=cbind(rbind(Itilde,R),rbind(mzero,Itilde))
+A0=rbind(A1,-A2)
+b0=c(rep(1,ntilde),rep(0,ntilde*3))
+x=solveLP(A,b0,A0,maximum=F)
+     
